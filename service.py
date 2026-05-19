@@ -15,6 +15,7 @@ def initialize(con: duckdb.DuckDBPyConnection):
     repo.create_table(con)
     add_all_assets(con)
     add_all_accounts(con)
+    add_all_holdings(con)
 
 # endregion
 
@@ -55,5 +56,28 @@ def add_all_accounts(con: duckdb.DuckDBPyConnection):
 
 def get_accounts(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
     return repo.find_all_accounts(con)
+
+# endregion
+
+
+# =========================================================================
+# region: holding
+# =========================================================================
+def add_all_holdings(con: duckdb.DuckDBPyConnection):
+    count = repo.get_holdings_count(con)
+    if count <= 0:
+        df = pd.DataFrame([
+            {"ticker": "005930", "account_id": 3, "quantity": 1, "avg_buy_price": 59000},
+            {"ticker": "0162Z0", "account_id": 2, "quantity": 10, "avg_buy_price": 13500},
+            {"ticker": "360750", "account_id": 1, "quantity": 5, "avg_buy_price": 27000},
+            {"ticker": "379810", "account_id": 1, "quantity": 5, "avg_buy_price": 29415},
+        ])
+        repo.save_holdings(con, df)
+    else:
+        print(f"[INFO] 보유 데이터 개수: {count}")
+
+
+def get_holdings(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    return repo.find_all_holdings(con)
 
 # endregion
