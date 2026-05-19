@@ -64,7 +64,7 @@ def create_table(con: duckdb.DuckDBPyConnection):
 
 # =========================================================================
 # region: DuckDB asset
-# =========================================================================         
+# =========================================================================        
 def get_assets_count(con: duckdb.DuckDBPyConnection) -> int:
     """
     테이블의 Cardinality (tuple 개수) 반환
@@ -115,8 +115,8 @@ def get_accounts_count(con: duckdb.DuckDBPyConnection) -> int:
     테이블의 Cardinality (tuple 개수) 반환
     """
     return con.execute("SELECT COUNT(*) FROM account").fetchone()[0] 
-    
-    
+
+
 def save_accounts(con: duckdb.DuckDBPyConnection, df: pd.DataFrame):
     """
     계좌 데이터 저장
@@ -177,5 +177,49 @@ def find_all_joins(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
         LEFT JOIN asset s ON h.ticker = s.ticker
         ORDER BY a.account_id, quantity DESC
     """).df()
+
+# endregion
+
+# =========================================================================
+# region: DuckDB daily_price
+# ========================================================================= 
+def find_latest_price_date(con: duckdb.DuckDBPyConnection) -> str:
+    """
+    daily_price 테이블의 최신 날짜 반환
+    """
+    return con.execute("SELECT MAX(date) FROM daily_price").fetchone()[0] 
+
+
+def save_prices(con: duckdb.DuckDBPyConnection, ticker: str, df: pd.DataFrame):
+    """
+    시세 데이터 저장
+    """
+    print('[INFO] daily_price 저장 시작')
+    df["date"] = df["date"].astype(str) # 날짜를 문자열로 변환 (DuckDB는 DATE 타입을 문자열로 받음)
+    df["ticker"] = ticker  # ticker 컬럼 추가
+
+    # daily_price 테이블의 스키마에 맞게 컬럼 순서 조정
+    df = df[["ticker", "date", "open", "high", "low", "close", "volume"]]
+
+    con.execute("INSERT OR IGNORE INTO daily_price SELECT * FROM df")
+    print('[INFO] daily_price 저장 완료')
+
+
+def find_prices_by_date(
+    con: duckdb.DuckDBPyConnection, 
+    ticker: str, 
+    start_date: str, 
+    end_date: str
+) -> pd.DataFrame:
+    """
+    특정 티커의 특정 기간의 시세 데이터 검색
+    """
+    return con.execute("""
+        SELECT * 
+        FROM daily_price 
+        WHERE ticker = ? 
+          AND date BETWEEN ? AND ?
+        ORDER BY date DESC
+    """, [ticker, start_date, end_date]).df()
 
 # endregion

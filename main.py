@@ -1,10 +1,5 @@
 import flet as ft
 import service
-# from views.account_view import create_account_view
-# from views.holding_view import create_holding_view
-# from views.price_view import create_price_view
-# from views.join_view import create_join_view
-# from views.asset_view import create_asset_view
 import views
 
 
@@ -20,17 +15,10 @@ def main(page: ft.Page):
     # page.scroll = ft.ScrollMode.ADAPTIVE
     # endregion
 
-    # Service
-    # con = duckdb.connect("data/finance.db")
     con = service.connect_database("data/finance.db")
 
-    # Service
-    # repo.create_table(con)
-    # add_all_assets(con)
     service.initialize(con)
 
-    # Service
-    # df = repo.find_assets_by_keyword(con, None)
     df = service.get_assets(con, None)
 
 
@@ -46,11 +34,15 @@ def main(page: ft.Page):
     holdings_df = service.get_holdings(con)
     tab_holdings = views.create_holding_view(holdings_df)
 
-    prices_df = None
-    tab_prices = views.create_price_view(prices_df)
+    # prices_df = None
+    # tab_prices = views.create_price_view(prices_df)
 
     join_df = service.get_joined_data(con)
     tab_join = views.create_join_view(join_df)
+
+    # tab_prices = ft.Text("보유 종목을 선택하면 시세를 볼 수 있습니다.")
+    join_df = join_df.sort_values(by="quantity", ascending=False)
+    tab_prices = views.create_price_view(join_df[["name", "ticker"]], con)
 
     tabs = ft.Tabs(
         length=5,
