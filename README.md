@@ -4,6 +4,8 @@
 
 https://nano5.notion.site/FinanceDataReader-351daf211d4280848affe9c4e5b6f78e?source=copy_link
 
+<img width="640" alt="image" src="https://github.com/user-attachments/assets/aa559ce5-59cc-4ec8-a45d-582c8832add3" />
+
 ---
 
 # 🚀 db_03_financedr (Flet + DuckDB + FinanceDataReader + uv)
