@@ -1,3 +1,4 @@
+import flet as ft
 import duckdb
 import pandas as pd
 import FinanceDataReader as fdr
@@ -76,6 +77,30 @@ def save_assets(con: duckdb.DuckDBPyConnection, df: pd.DataFrame):
     con.execute("INSERT OR IGNORE INTO asset SELECT * FROM df")
     print('[INFO] asset 저장 완료')
 
+
+def find_assets_by_keyword(con: duckdb.DuckDBPyConnection, keyword: str) -> pd.DataFrame:
+    """
+    주식 및 ETF 검색. keyword 없으면 전체 결과 반환
+    """
+    # strip() 함수는 양쪽 공백 제거
+    # 빈 문자열("")은 False이므로, not ""은 True
+    if not keyword or not keyword.strip():
+        return con.execute("""
+            SELECT * 
+            FROM asset
+            ORDER BY country, name
+            LIMIT 200
+        """).df()
+
+    query = """
+        SELECT * FROM asset 
+        WHERE name ILIKE ?
+        OR ticker ILIKE ?
+        LIMIT 200
+    """
+    search_str = f'%{keyword}%'
+    return con.execute(query, [search_str, search_str,]).df()
+
 # endregion
 
 
@@ -149,14 +174,44 @@ def add_all_assets(con: duckdb.DuckDBPyConnection):
 # =========================================================================
 # region: Main
 # =========================================================================
-def main():
+def main(page: ft.Page):
+    # region [Page Setup]
+    page.title = "Finance Database"
+    page.padding = 16
+    page.window.width = 700
+    page.window.height = 500
+    page.scroll = ft.ScrollMode.ADAPTIVE
+    # endregion
+
     con = duckdb.connect("data/finance.db")
 
     create_table(con)
     add_all_assets(con)
+    
+    # df = find_assets_by_keyword(con, None)
+    df = find_assets_by_keyword(con, '하이닉스')
+
+    table_assets = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text(str.upper(col))) 
+            for col in df.columns
+        ],
+        rows=[
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(str(value))) 
+                    for value in row
+                ]
+            ) for row in df.values
+        ],
+    )
+
+    page.add(
+        table_assets,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    ft.run(main)
 
 # endregion
