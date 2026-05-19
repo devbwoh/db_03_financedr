@@ -1,5 +1,11 @@
 import flet as ft
 import service
+# from views.account_view import create_account_view
+# from views.holding_view import create_holding_view
+# from views.price_view import create_price_view
+# from views.join_view import create_join_view
+# from views.asset_view import create_asset_view
+import views
 
 
 # =========================================================================
@@ -27,63 +33,24 @@ def main(page: ft.Page):
     # df = repo.find_assets_by_keyword(con, None)
     df = service.get_assets(con, None)
 
-    # DataTable
-    def create_rows(df) -> ft.DataRow:
-        return [
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text(str(value))) 
-                    for value in row
-                ]
-            ) for row in df.values
-        ]
 
+    def search_assets(keyword: str):
+        return service.get_assets(con, keyword)
+    
 
-    table_assets = ft.DataTable(
-        columns=[
-            ft.DataColumn(ft.Text(str.upper(col))) 
-            for col in df.columns
-        ],
-        rows= create_rows(df),
-    )
+    tab_assets = views.create_asset_view(df, search_assets)
 
+    accounts_df = None
+    tab_accounts = views.create_account_view(accounts_df)
 
-    # Filtering
-    def on_filter_change(e):
-        # 입력된 텍스트로 asset 테이블 검색
-        # Service
-        # filtered_df = repo.find_assets_by_keyword(con, e.control.value)
-        filtered_df = service.get_assets(con, e.control.value)
+    holdings_df = None
+    tab_holdings = views.create_holding_view(holdings_df)
 
-        table_assets.rows.clear()
-        table_assets.rows = create_rows(filtered_df)
+    prices_df = None
+    tab_prices = views.create_price_view(prices_df)
 
-        page.update()
-
-
-    filter_input = ft.Container(
-        ft.TextField(
-            label="종목 검색",
-            prefix_icon=ft.Icons.SEARCH,
-            hint_text="종목명을 입력하세요",
-            hint_style=ft.TextStyle(color=ft.Colors.GREY_700),
-            margin=16,
-            expand=True,
-            on_submit=on_filter_change,
-        )
-    )
-
-    # region [탭] 종목, 계좌, 보유, 시세, Join
-    tab_assets = ft.Column(
-        expand=True,
-        scroll=ft.ScrollMode.ALWAYS,
-        controls=[filter_input, table_assets],
-    )
-
-    tab_accounts = ft.Text("계좌")
-    tab_holdings = ft.Text("보유")
-    tab_prices = ft.Text("시세")
-    tab_join = ft.Text("Join")
+    join_df = None
+    tab_join = views.create_join_view(join_df)
 
     tabs = ft.Tabs(
         length=5,
