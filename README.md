@@ -33,6 +33,13 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
+## 📂 data 폴더 생성
+프로젝트 폴더에 data 폴더 생성
+
+```bash
+mkdir data
+```
+
 ## ▶️ 실행 및 핫 리로드 (Run & Hot Reload)
 
 ```bash

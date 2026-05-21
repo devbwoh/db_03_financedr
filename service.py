@@ -50,7 +50,6 @@ def add_all_accounts(con: duckdb.DuckDBPyConnection):
             {"account_id": 1, "account_name": "ISA", "brokerage": "키움증권"},
             {"account_id": 2, "account_name": "연금저축펀드", "brokerage": "삼성증권"},
             {"account_id": 3, "account_name": "위탁계좌", "brokerage": "미래에셋"},
-            {"account_id": 4, "account_name": "위탁계좌 (아주 아주 아주 아주 아주 공격형)", "brokerage": "한국투자"},
         ])
         repo.save_accounts(con, df)
     else:
